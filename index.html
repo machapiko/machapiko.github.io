@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推し活タイプ診断テスト</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .question {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .options {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .options label {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+        }
+        .options input {
+            margin-right: 5px;
+        }
+        button {
+            display: block;
+            width: 200px;
+            margin: 30px auto;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e8f5e9;
+            border-radius: 5px;
+            display: none;
+        }
+        #result h2 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+        .result-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .result-title {
+            font-weight: bold;
+            color: #1b5e20;
+            margin-bottom: 10px;
+        }
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background-color: #4CAF50;
+            transition: width 0.3s ease;
+        }
+        .type-description {
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+        .advice-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff3e0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress" id="progress"></div>
+    <div class="container">
+        <h1>推し活タイプ診断テスト</h1>
+        <div id="quiz">
+            <form id="quizForm">
+                <!-- 質問は JavaScript で動的に追加されます -->
+            </form>
+            <button onclick="calculateResult()">結果を見る</button>
+        </div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const questions = [
+            "推しのグッズやCDをすぐに購入している",
+            "推しの活動をSNSで頻繁にチェックしている",
+            "推しのことを考えると心が落ち着く",
+            "推しに関連するイベントには可能な限り参加している",
+            "推し活にお金をかけることに躊躇いはない",
+            "推し活で充実感を得られている",
+            "推しについて他のファンと交流することが多い",
+            "推しのことを考えると幸せな気持ちになる",
+            "推しの情報を見逃さないようにしている",
+            "推し活は自分の生活の重要な部分を占めている"
+        ];
+
+        const activeQuestions = [0, 1, 3, 4, 6, 8];
+        const satisfactionQuestions = [2, 5, 7, 9];
+
+        // 結果タイプの詳細情報
+        const typeDetails = {
+            "溺愛オタク": {
+                description: "充実度も高く、アクティブ度も高いあなたは推し活を存分に楽しんでいます！",
+                characteristics: [
+                    "推し活に積極的で情熱的な姿勢を持っている",
+                    "推しとの関係性を大切にし、深い愛着を感じている",
+                    "ファン活動から大きな喜びと充実感を得ている",
+                    "推しに関する情報収集や活動が生活の重要な部分を占めている"
+                ],
+                advice: "あなたの推し活は理想的な形で進んでいます。ただし、時には客観的な視点を持ち、生活のバランスを保つことも大切です。推し活の楽しさを周りのファンと共有し、コミュニティのポジティブな雰囲気作りに貢献できる存在として、さらに充実した活動を続けていってください。",
+                nextSteps: [
+                    "他のファンとの交流をさらに深める",
+                    "推し活で得た経験や知識を活かして新しい楽しみ方を見つける",
+                    "健全な距離感を保ちながら活動を継続する"
+                ]
+            },
+            "迷走オタク": {
+                description: "アクティブに活動していますが、まだ充実感を模索している途中かもしれません。",
+                characteristics: [
+                    "積極的に活動しているものの、まだ迷いを感じている",
+                    "推し活の方向性を探している最中である",
+                    "活動量は多いが、満足度にはまだ余地がある",
+                    "新しい楽しみ方を模索している"
+                ],
+                advice: "たくさん活動していることは素晴らしいことです。ただ、量より質を重視してみてはいかがでしょうか？自分が本当に楽しいと感じる活動に焦点を当て、無理のない範囲で推し活を楽しむことで、より充実感を得られるかもしれません。",
+                nextSteps: [
+                    "自分が最も楽しいと感じる活動を見つめ直す",
+                    "無理のないペースで活動する",
+                    "他のファンの楽しみ方を参考にする"
+                ]
+            },
+            "虚無オタク": {
+                description: "たくさん活動しているのに充実感が得られていないようです。推し活の方向性を見直してみては？",
+                characteristics: [
+                    "活動は活発だが、満足感や充実感が低い",
+                    "推し活に対して何らかの不安や悩みを抱えている",
+                    "活動の目的や意義を見失いがちである",
+                    "推し活にストレスを感じることがある"
+                ],
+                advice: "現在の活動スタイルに疲れを感じているかもしれません。一度立ち止まって、自分にとっての推し活の意味を考えてみましょう。必要以上に頑張りすぎていないか、本当に楽しめているかを見つめ直すことで、新しい楽しみ方が見つかるかもしれません。",
+                nextSteps: [
+                    "推し活の目的を再確認する",
+                    "無理のない範囲で活動量を調整する",
+                    "自分なりの楽しみ方を見つける"
+                ]
+            },
+            "ライト層オタク": {
+                description: "マイペースに推し活を楽しんでいて、程よい充実感を得られています。",
+                characteristics: [
+                    "バランスの取れた推し活を実現している",
+                    "自分のペースで無理なく活動している",
+                    "推し活に適度な満足感を感じている",
+                    "効率的に楽しみ方を見出している"
+                ],
+                advice: "あなたの推し活スタイルは、とても健全です。必要以上に頑張りすぎることなく、自分のペースを保ちながら楽しめています。この調和の取れた関係を大切にしながら、さらに自分らしい楽しみ方を探していくことをお勧めします。",
+                nextSteps: [
+                    "現在の楽しみ方を維持しながら、新しい体験にも挑戦する",
+                    "興味のある活動を少しずつ広げていく",
+                    "自分のペースを大切にしながら活動を継続する"
+                ]
+            },
+            "ノーマル人間": {
+                description: "まだ推し活を始めたばかり、もしくは控えめな関わり方を選んでいるようです。",
+                characteristics: [
+                    "推し活に対して慎重または控えめな姿勢",
+                    "活動頻度は低めだが、関心は持っている",
+                    "まだ探り探りの段階である",
+                    "推し活に対して様子見の状態"
+                ],
+                advice: "推し活に興味を持ち始めた段階かもしれません。焦る必要はありません。自分の興味のある活動から少しずつ始めてみましょう。SNSでの情報収集や、気軽に参加できるイベントから始めるのもいいかもしれません。",
+                nextSteps: [
+                    "興味のある活動から少しずつ始める",
+                    "SNSでの情報収集を始める",
+                    "気軽に参加できるファン活動を探してみる"
+                ]
+            }
+        };
+
+        // 質問フォームの作成
+        const form = document.getElementById('quizForm');
+        questions.forEach((question, index) => {
+            const div = document.createElement('div');
+            div.className = 'question';
+            div.innerHTML = `
+                <p>${index + 1}. ${question}</p>
+                <div class="options">
+                    <label><input type="radio" name="q${index}" value="1" required> 全くそう思わない</label>
+                    <label><input type="radio" name="q${index}" value="2" required> あまりそう思わない</label>
+                    <label><input type="radio" name="q${index}" value="3" required> ややそう思う</label>
+                    <label><input type="radio" name="q${index}" value="4" required> とてもそう思う</label>
+                </div>
+            `;
+            form.appendChild(div);
+        });
+
+        // プログレスバーの更新
+        function updateProgress() {
+            const inputs = document.querySelectorAll('input[type="radio"]:checked');
+            const progress = (inputs.length / questions.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+        }
+
+        document.querySelectorAll('input[type="radio"]').forEach(input => {
+            input.addEventListener('change', updateProgress);
+        });
+
+        function calculateResult() {
+            const unanswered = questions.find((_, index) => 
+                !document.querySelector(`input[name="q${index}"]:checked`)
+            );
+            
+            if (unanswered !== undefined) {
+                alert('すべての質問に回答してください。');
+                return;
+            }
+
+            let activeScore = 0;
+            let satisfactionScore = 0;
+
+            activeQuestions.forEach(index => {
+                activeScore += parseInt(document.querySelector(`input[name="q${index}"]:checked`).value);
+            });
+            satisfactionQuestions.forEach(index => {
+                satisfactionScore += parseInt(document.querySelector(`input[name="q${index}"]:checked`).value);
+            });
+
+            activeScore = activeScore / activeQuestions.length;
+            satisfactionScore = satisfactionScore / satisfactionQuestions.length;
+
+            let type;
+            if (activeScore > 2.5) {
+                if (satisfactionScore > 3) {
+                    type = "溺愛オタク";
+                } else if (satisfactionScore > 2) {
+                    type = "迷走オタク";
+                } else {
+                    type = "虚無オタク";
+                }
+            } else {
+                if (satisfactionScore > 2.5) {
+                    type = "ライト層オタク";
+                } else {
+                    type = "ノーマル人間";
+                }
+            }
+
+            const details = typeDetails[type];
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <h2>あなたの推し活タイプは...</h2>
+                <h3>『${type}』</h3>
+                <div class="type-description">
+                    <p>${details.description}</p>
+                    
+                    <div class="result-section">
+                        <div class="result-title">このタイプの特徴：</div>
+                        <ul>
+                            ${details.characteristics.map(char => `<li>${char}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="advice-section">
+                        <div class="result-title">アドバイス：</div>
+                        <p>${details.advice}</p>
+                        
+                        <div class="result-title">次のステップ：</div>
+                        <ul>
+                            ${details.nextSteps.map(step => `<li>${step}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
